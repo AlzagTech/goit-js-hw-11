@@ -5,6 +5,7 @@ import { fetchImages } from './js/fetchImages';
 
 const refs = {
   form: document.querySelector('.search-form'),
+  formBtn: document.querySelector('.search-form button'),
   gallery: document.querySelector('.gallery'),
   loadMoreBtn: document.querySelector('.load-more'),
 };
@@ -21,9 +22,12 @@ let gallery = new SimpleLightbox('.gallery a');
 
 async function onFormSubmit(event) {
   event.preventDefault();
+  refs.formBtn.blur();
 
   currentPage = 1;
   searchQuery = event.target.searchQuery.value;
+
+  refs.loadMoreBtn.classList.add('visually-hidden');
 
   if (!searchQuery) {
     return;
@@ -32,6 +36,7 @@ async function onFormSubmit(event) {
   const response = await fetchImages(searchQuery, currentPage, perPage);
 
   if (response.totalHits === 0) {
+    refs.gallery.innerHTML = '';
     Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
     );
@@ -42,6 +47,12 @@ async function onFormSubmit(event) {
 
   refs.gallery.innerHTML = createGalleryMarkup(response.hits);
   gallery.refresh();
+
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: 'smooth',
+  });
 
   if (response.totalHits <= perPage) {
     return;
@@ -78,6 +89,7 @@ async function onLoadMoreBtnClick() {
   }
 
   refs.loadMoreBtn.classList.remove('visually-hidden');
+  refs.loadMoreBtn.blur();
 }
 
 function createGalleryMarkup(array) {
